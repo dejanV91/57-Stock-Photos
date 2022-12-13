@@ -30,7 +30,9 @@ function App() {
       const data = await response.json();
 
       setPhotos((oldPhotos) => {
-        if (query) {
+        if (query && page === 1) {
+          return data.results;
+        } else if (query) {
           return [...oldPhotos, ...data.results];
         } else {
           return [...oldPhotos, ...data];
@@ -64,7 +66,9 @@ function App() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setPage(1);
     fetchImages();
+    setPhotos([]);
   };
 
   return (

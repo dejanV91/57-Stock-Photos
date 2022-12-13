@@ -14,17 +14,29 @@ function App() {
   const [query, setQuery] = useState("");
 
   const fetchImages = async () => {
+    let url;
     const pageUrl = `&page=${page}`;
     const queryUrl = `&query=${query}`;
 
-    let url = `${mainUrl}${clientID}${pageUrl}`;
+    if (query) {
+      url = `${searchUrl}${clientID}${pageUrl}${queryUrl}`;
+    } else {
+      url = `${mainUrl}${clientID}${pageUrl}`;
+    }
+
     try {
       setLoading(true);
       const response = await fetch(url);
       const data = await response.json();
+
       setPhotos((oldPhotos) => {
-        return [...oldPhotos, ...data];
+        if (query) {
+          return [...oldPhotos, ...data.results];
+        } else {
+          return [...oldPhotos, ...data];
+        }
       });
+      setLoading(false);
     } catch (error) {
       console.log(error);
       setLoading(false);
@@ -41,21 +53,24 @@ function App() {
         !loading &&
         window.innerHeight + window.scrollY >= document.body.scrollHeight - 1
       ) {
-        setPage((oldPage) => oldPage + 1);
+        setPage((oldPage) => {
+          return oldPage + 1;
+        });
       }
     });
 
     return () => window.addEventListener("scroll", event);
-  }, []);
+  }, [page]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    fetchImages();
   };
 
   return (
     <main>
       <section className="search">
-        <form className="search-form" onSubmit={handleSubmit}>
+        <form className="search-form">
           <input
             type="text"
             placeholder="search"
@@ -63,7 +78,7 @@ function App() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <button type="submit" className="submit-btn">
+          <button type="submit" className="submit-btn" onClick={handleSubmit}>
             <FaSearch />
           </button>
         </form>

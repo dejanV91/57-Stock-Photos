@@ -53,7 +53,7 @@ function App() {
     const event = window.addEventListener("scroll", () => {
       if (
         !loading &&
-        window.innerHeight + window.scrollY >= document.body.scrollHeight - 1
+        window.innerHeight + window.scrollY >= document.body.scrollHeight - 5
       ) {
         setPage((oldPage) => {
           return oldPage + 1;
@@ -62,13 +62,13 @@ function App() {
     });
 
     return () => window.addEventListener("scroll", event);
-  }, [page]);
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setPage(1);
-    fetchImages();
     setPhotos([]);
+    fetchImages();
   };
 
   return (

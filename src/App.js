@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FaSearch } from "react-icons/fa";
 import Photo from "./Photo";
 // const clientID = `?client_id=${process.env.REACT_APP_ACCESS_KEY}`
@@ -12,6 +12,8 @@ function App() {
   const [photos, setPhotos] = useState([]);
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
+  const [newImages, setNewImages] = useState(false);
+  const mounted = useRef(false);
 
   const fetchImages = async () => {
     let url;
@@ -38,37 +40,49 @@ function App() {
           return [...oldPhotos, ...data];
         }
       });
+      setNewImages(false);
       setLoading(false);
     } catch (error) {
-      console.log(error);
+      setNewImages(false);
       setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchImages();
+    // eslint-disable-next-line
   }, [page]);
 
   useEffect(() => {
-    const event = window.addEventListener("scroll", () => {
-      if (
-        !loading &&
-        window.innerHeight + window.scrollY >= document.body.scrollHeight - 5
-      ) {
-        setPage((oldPage) => {
-          return oldPage + 1;
-        });
-      }
-    });
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+    if (!newImages) return;
+    if (loading) return;
+    setPage((oldPage) => oldPage + 1);
+    // eslint-disable-next-line
+  }, [newImages]);
 
-    return () => window.addEventListener("scroll", event);
+  const event = () => {
+    if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 2) {
+      setNewImages(true);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("scroll", event);
+    return () => window.removeEventListener("scroll", event);
   }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!query) return;
+    if (page === 1) {
+      fetchImages();
+      return;
+    }
     setPage(1);
-    setPhotos([]);
-    fetchImages();
   };
 
   return (
